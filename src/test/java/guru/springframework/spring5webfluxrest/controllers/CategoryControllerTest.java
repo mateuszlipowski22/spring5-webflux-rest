@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 class CategoryControllerTest {
 
@@ -82,5 +83,44 @@ class CategoryControllerTest {
                 .exchange()
                 .expectStatus()
                 .isOk();
+    }
+
+    @Test
+    public void testPatchCategoryNoChanges(){
+        BDDMockito.given(categoryRepository.findById(anyString()))
+                .willReturn(Mono.just(Category.builder().build()));
+
+        BDDMockito.given(categoryRepository.save(any(Category.class)))
+                .willReturn(Mono.just(Category.builder().build()));
+
+        Mono<Category> catToUpdate =Mono.just(Category.builder().build());
+
+        webTestClient.patch()
+                .uri("/api/v1/categories/dsadsada")
+                .body(catToUpdate, Category.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        BDDMockito.verify(categoryRepository, Mockito.never()).save(any());
+    }
+
+    public void testPatchCategoryWithChanges(){
+        BDDMockito.given(categoryRepository.findById(anyString()))
+                .willReturn(Mono.just(Category.builder().build()));
+
+        BDDMockito.given(categoryRepository.save(any(Category.class)))
+                .willReturn(Mono.just(Category.builder().build()));
+
+        Mono<Category> catToUpdate =Mono.just(Category.builder().description("updates").build());
+
+        webTestClient.patch()
+                .uri("/api/v1/categories/dsadsada")
+                .body(catToUpdate, Category.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        BDDMockito.verify(categoryRepository).save(any());
     }
 }
